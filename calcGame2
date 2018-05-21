@@ -1,0 +1,229 @@
+	//------------------------------------------------------------
+	//------------------------------------------------------------
+	//------------------------------------------------------------
+public class calcGame2
+{
+	public static Boolean debug=false;//Toggle to show debug prints
+	public static Boolean printEnd=true;//Toggle to show debug prints
+	
+	public static void main(String[] args)
+	{
+		System.out.printf("%d - %d ",(int)(1+Math.random()*9),(int)(1+Math.random()*13));
+		//Config vars
+		int start=74;
+		int end=56;
+		int moves=9;
+		String rawOptions="-4,*4,/3,/8"; //Comma delimited list
+		
+		String[] opsArray=rawOptions.split(",");
+		
+		String[] solution=new String[moves];
+		
+		//Run game
+		printGame(start,end,moves,opsArray);
+		if(tryPath(moves,start,end,opsArray,solution))
+		{
+			if(printEnd)
+			{
+				printSolution(start,solution);
+			}
+		}
+		else
+			System.out.printf("\nERROR: NO SOLUTION FOUND");
+	}
+	
+	//------------------------------------------------------------
+	//-BEGIN STRING FORMATTING AND PRINTING-----------------------
+	//------------------------------------------------------------	
+	public static void printGame(int start,int end,int moves,String[] options)
+	{
+		System.out.printf("\nCalculating solutions for game state;");
+		System.out.printf("\n\tStart:\t%d",start);
+		System.out.printf("\n\tEnd:\t%d",end);
+		System.out.printf("\n\tMoves:\t%d",moves);
+		System.out.printf("\n\tWith operations;");
+		for(String op : options)
+		{
+			System.out.printf("\n\t\t%s",op);
+		}
+	}
+	
+	public static void printSolution(int start,String[] solution)
+	{
+		System.out.printf("\nSolution Found");
+		System.out.printf("\n\t0: %s - [CurrentVal=%d]",padString(""),start);
+		int[] tempArr;
+		for(int itt=solution.length-1;itt>=0;itt--)
+		{
+			tempArr=eval(start,solution[itt]);
+			start=tempArr[1];
+			System.out.printf("\n\t%d: %s - [CurrentVal=%d]",solution.length-itt,padString(solution[itt]),start);
+		}
+	}
+	
+	public static String padString(String input)
+	{
+		if(input==null)
+			return "NULL INPUT";
+		String output="";
+		int padTo=10;
+		
+		for(int i=input.length();i<padTo;i++)
+			output+=" ";
+
+		return output+input;
+	}
+
+	//------------------------------------------------------------
+	//-END STRING FORMATTING AND PRINTING-------------------------
+	//------------------------------------------------------------
+	
+	//------------------------------------------------------------
+	//-BEGIN MATHEMATICS PORTION----------------------------------
+	//------------------------------------------------------------
+	
+	public static int[] eval(int start,String op)
+	{
+		//outArr [0] - Success flag
+		//outArr [1] - Output value
+		int[] outArr=new int[2];
+		outArr[0]=1;
+		String operand="";
+		try
+		{
+			operand=op.substring(0,1);
+		}
+		catch(NullPointerException e)
+		{
+			operand="";
+		}
+		String[] varArray;
+		String rawVar;
+		int v1;
+		double dVal;
+		
+		switch (operand)
+		{
+			case "+":
+				v1=Integer.parseInt(op.substring(1,op.length()));
+				outArr[1]=start+v1;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "-":
+				v1=Integer.parseInt(op.substring(1,op.length()));
+				outArr[1]=start-v1;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "*":
+				v1=Integer.parseInt(op.substring(1,op.length()));
+				outArr[1]=start*v1;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "/":
+				v1=Integer.parseInt(op.substring(1,op.length()));
+				dVal=start/(v1+0.0);
+				if(Math.abs(dVal%1)>0)
+					outArr[0]=0;
+				else
+					outArr[1]=(int)dVal;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "^":
+				v1=Integer.parseInt(op.substring(1,op.length()));
+				outArr[1]=(int)Math.pow(start, v1);
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "a":
+				try
+				{
+					outArr[1]=Integer.parseInt(start+op.substring(1,op.length()));
+				}
+				catch(NumberFormatException e)
+				{
+					outArr[0]=0;
+				}
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "s":
+				rawVar=op.substring(1,op.length());
+				varArray=rawVar.split("_");
+				outArr[1]=Integer.parseInt((""+start).replace(varArray[0],varArray[1]));
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "f":
+				outArr[1]=start*-1;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			case "<":
+				outArr[1]=start/10;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+			default:
+				outArr[0]=0;
+				if(debug)
+					System.out.printf("\nOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(operand),start,op.substring(1,op.length()),outArr[1]);
+				break;
+		}
+		return outArr;
+	}
+	
+	//------------------------------------------------------------
+	//-END MATHEMATICS PORTION------------------------------------
+	//------------------------------------------------------------
+	
+	//------------------------------------------------------------
+	//-BEGIN SEARCH-----------------------------------------------
+	//------------------------------------------------------------
+	
+	public static Boolean tryPath(int tries, int start, int target, String[] ops, String[] solution)
+	{
+		if(start==target)
+		{
+			if(debug)
+			{
+				System.out.printf("\nSUCCESS");
+			}
+			return true;
+		}
+		if(tries<=0)
+		{
+			if(debug)
+			{
+				System.out.printf("\nREACHED END");
+			}
+			return false;
+		}
+		int[] outArr;
+		int tempVal=0;
+		for(String op:ops)
+		{
+			outArr=eval(start,op);
+			tempVal=outArr[1];
+			if(debug)
+				System.out.printf("\n\tOP: %s\tStart: %d\tVal: %s\tEnd: %d",padString(op),start,op.substring(1,op.length()),outArr[1]);
+			if(outArr[0]==1)
+			{
+				if(tryPath(tries-1,tempVal,target,ops,solution))
+				{
+					solution[tries-1]=op;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	//------------------------------------------------------------
+	//-END SEARCH-------------------------------------------------
+	//------------------------------------------------------------
+	
+}
